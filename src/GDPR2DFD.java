@@ -44,6 +44,13 @@ public class GDPR2DFD {
 	
 	private Resource ddResource;
 	
+	/**
+	 * Creates Transformation with tracemodel to recreate DFD instance
+	 * @param gdprFile Location of the GDPR instance
+	 * @param dfdFile Location of where to save the new DFD instance
+	 * @param ddFile Location of the Data Dictionary instance
+	 * @param traceModelFile Location of the TraceModel instance
+	 */
 	public GDPR2DFD(String gdprFile, String dfdFile, String ddFile, String traceModelFile) {
 		this.dfdFile = dfdFile;
 		this.ddFile = ddFile;
@@ -66,6 +73,12 @@ public class GDPR2DFD {
 		tracemodel = (TraceModel) tmResource.getContents().get(0);
 	}
 	
+	/**
+	 * Creates Transformation for initial transformations from the GDPR into the DFD metamodel
+	 * @param gdprFile Location of the gdpr instance
+	 * @param dfdFile Location of where to save the new DFD instance
+	 * @param ddFileLocation of where to save the new DD instance
+	 */
 	public GDPR2DFD(String gdprFile, String dfdFile, String ddFile) {
 		this.dfdFile = dfdFile;
 		this.ddFile = ddFile;
@@ -84,6 +97,9 @@ public class GDPR2DFD {
 		laf = (LegalAssessmentFacts) gdprResource.getContents().get(0);					
 	}
 	
+	/**
+	 * Performs the transformation with the information provided in the constructor
+	 */
 	public void transform() {
 		createLabelTypes();
 		
@@ -120,7 +136,9 @@ public class GDPR2DFD {
 	}
 	
 	
-	
+	/**
+	 * Creates the labeltypes that hold the GDPR instance specific information
+	 */
 	private void createLabelTypes() {
 		gdprElementsLabelType = ddFactory.createLabelType();
 		gdprNodeLabelType = ddFactory.createLabelType();
@@ -135,6 +153,11 @@ public class GDPR2DFD {
 		dd.getLabelTypes().add(gdprLinkLabelType);
 	}
 	
+	/**
+	 * Creates all flows outgoing from a processing from following processing or pulls them from the tracemodel if present
+	 * @param processing Source for the created Nodes
+	 * @return All flows going out from the source node
+	 */
 	private List<Flow> createFlows(Processing processing) {
 		if (tracemodel != null) {
 			return tracemodel.getFlowList()
@@ -180,12 +203,20 @@ public class GDPR2DFD {
 		return flows;
 	}
 	
+	/**
+	 * Fills the processingToNode Map in case the tracemodel is present
+	 */
 	private void handleTraceModel() {
 		tracemodel.getTracesList().forEach(t -> {
 			mapProcessingToNode.put(t.getProcessing(), t.getNode());
 		});
 	}
 	
+	/**
+	 * Transforms a processing into a node or pulls the node from the tracemodel if present
+	 * @param processing Processing to be transformed
+	 * @return Node that was created or pulled from the tracemodel
+	 */
 	private Node convertProcessing(Processing processing) {
 		Node node;
 		
@@ -242,6 +273,10 @@ public class GDPR2DFD {
 		return node;		
 	}
 	
+	/**
+	 * Created the linkage labels for the legal basis and saves it in the map
+	 * @param legalBasis The legal basis for which the labels are created
+	 */
 	private void fillLinkageLabelMapForLegalBasis(LegalBasis legalBasis) {
 		List<Label> labels = new ArrayList<>();
 		if (legalBasis instanceof Consent) {
@@ -263,6 +298,10 @@ public class GDPR2DFD {
 		mapElementToLinkageLabels.put(legalBasis, labels);
 	}
 	
+	/**
+	 * Created the linkage labels for the personal data and saves it in the map
+	 * @param PersonalData The legal basis for which the labels are created
+	 */
 	private void fillLinkageLabelMapForPersonalData(PersonalData personalData) {
 		List<Label> labels = new ArrayList<>();
 		
@@ -274,6 +313,11 @@ public class GDPR2DFD {
 	}
 	
 	
+	/**
+	 * Creates the label storing the processing type
+	 * @param processing Processing whichs type is stored
+	 * @return Label storing the type
+	 */
 	private Label createTypeLabel(Processing processing) {
 		Label label = ddFactory.createLabel();		
 		label.setEntityName("GDPR::ofType:" + processing.getClass().getSimpleName());
@@ -281,6 +325,12 @@ public class GDPR2DFD {
 		return label;
 	}
 	
+	/**
+	 * Returns a label representing the Entity and its relationship to the processing element and creates it if necessary
+	 * @param entity Entity to be represented by the label
+	 * @param reference Reference representing the entiy and its relationship
+	 * @return Creatd Label
+	 */
 	private Label createElementLabel(Entity entity, String reference) {
 		if (mapElementIdAndReferenceToLabel.containsKey(entity.getId() + reference)) {
 			return mapElementIdAndReferenceToLabel.get(entity.getId() + reference);		
@@ -300,6 +350,13 @@ public class GDPR2DFD {
 		return label;
 	}
 	
+	/**
+	 * Creates linkage label between two entities.
+	 * @param firstEntity Entity holding the reference
+	 * @param secondEntity References Entity
+	 * @param linkType Type of reference
+	 * @return Created Label
+	 */
 	private Label createLinkageLabel(Entity firstEntity, Entity secondEntity, String linkType) {
 		Label label = ddFactory.createLabel();		
 		StringBuilder builder = new StringBuilder();

@@ -77,6 +77,9 @@ public class DFD2GDPR {
 		
 	}
 	
+	/**
+	 * Performs the transformation on the models provided in the Constructor
+	 */
 	public void transform() {
 		dfd.getNodes().stream().forEach(node -> {
 			Processing processing = resolveProcessingTypeLabel(node);
@@ -129,6 +132,11 @@ public class DFD2GDPR {
 		saveResource(ddResource);
 	}
 	
+	/**
+	 * Creates a Processing of the right type through using the descriptor label or through node type if no label is present
+	 * @param node Node to be transformed into a Processing element
+	 * @return created processing element
+	 */
 	private Processing resolveProcessingTypeLabel(Node node) {
 		List<String> filteredLabels = node.getProperties().stream()
 				.map(label -> label.getEntityName())
@@ -159,6 +167,10 @@ public class DFD2GDPR {
 		}
 	}
 	
+	/**
+	 * Transforms a flow into the following processing attribute of processing
+	 * @param flow
+	 */
 	private void transformFlow (Flow flow) {
 		Processing source = mapNodeToProcessing.get(flow.getSourceNode());
 		Processing destination = mapNodeToProcessing.get(flow.getDestinationNode());
@@ -166,6 +178,10 @@ public class DFD2GDPR {
 		source.getFollowingProcessing().add(destination);
 	}
 	
+	/**
+	 * Fills the references of Objects held by the processing and creates the refence objects if necessary
+	 * @param properties All labels present on the node including the reference labels
+	 */
 	private void resolveLinkLabel (List<Label> properties) {
 		properties.stream()
 		.filter(label -> label.getEntityName().startsWith("GDPR::"))
@@ -203,6 +219,11 @@ public class DFD2GDPR {
 		});
 	}
 	
+	/**
+	 * Fills the references of the processing element. Creates the referenced objects if necessary
+	 * @param processing Processing element to be filled
+	 * @param properties All Node labels present on the Node including the ELement labels
+	 */
 	private void resolveElementLabel(Processing processing, List<Label> properties) {
 		properties.stream()
 		.filter(label -> ((LabelType)label.eContainer()).getEntityName().equals("GDPRElement"))
@@ -235,6 +256,11 @@ public class DFD2GDPR {
 		});		
 	}
 	
+	/**
+	 * Creates an entity based on the label description or returns the Object if it was already created
+	 * @param string Label name that descibes the entity with Prefixes removed
+	 * @return The created Entity
+	 */
 	private Entity resolveAndCreateElementType(String string) {
 		String[] substring = string.split(":");
 		String type = substring[0].replace("Impl", "");
